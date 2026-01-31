@@ -11,4 +11,8 @@ import java.util.List;
 public interface HoldingRepository extends JpaRepository<Holding, Long> {
     List<Holding> findByAssetType(String assetType);
     List<Holding> findBySymbol(String symbol);
+
+    @Query("SELECT h.assetType, COUNT(h), SUM(h.quantity * h.purchasePrice) " +
+            "FROM Holding h GROUP BY h.assetType")
+    List<Object[]> findPortfolioComposition();
 }

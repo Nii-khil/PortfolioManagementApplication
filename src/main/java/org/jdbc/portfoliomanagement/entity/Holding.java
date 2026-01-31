@@ -1,7 +1,6 @@
 package org.jdbc.portfoliomanagement.entity;
 
 import jakarta.persistence.*;
-import org.antlr.v4.runtime.misc.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,6 +32,18 @@ public class Holding {
 
     @Transient
     private BigDecimal profitLossPercentage;
+
+    @Transient
+    private String currency;
+
+    @Transient
+    private String currencySymbol;
+
+    @Transient
+    private BigDecimal currentValueInr;
+
+    @Transient
+    private BigDecimal profitLossInr;
 
     public Holding() {}
 
@@ -121,6 +132,38 @@ public class Holding {
 
     public void setCurrentPrice(BigDecimal currentPrice) {
         this.currentPrice = currentPrice;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getCurrencySymbol() {
+        return currencySymbol;
+    }
+
+    public void setCurrencySymbol(String currencySymbol) {
+        this.currencySymbol = currencySymbol;
+    }
+
+    public BigDecimal getCurrentValueInr() {
+        return currentValueInr;
+    }
+
+    public void setCurrentValueInr(BigDecimal currentValueInr) {
+        this.currentValueInr = currentValueInr;
+    }
+
+    public BigDecimal getProfitLossInr() {
+        return profitLossInr;
+    }
+
+    public void setProfitLossInr(BigDecimal profitLossInr) {
+        this.profitLossInr = profitLossInr;
     }
 
     public BigDecimal getCurrentValue() {
