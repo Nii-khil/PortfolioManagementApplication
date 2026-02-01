@@ -34,6 +34,20 @@ public class HoldingController {
     @PostMapping("/holdings")
     public ResponseEntity<Holding> createHolding(@RequestBody Holding holding) {
         Holding created = holdingService.createHolding(holding);
+
+        try {
+            String Symbol = created.getSymbol();
+            String assetType = created.getAssetType();
+
+            List<HistoricalPrice> existingData = historicalPriceService.getHistoricalPrices(Symbol);
+            if (existingData.isEmpty()) {
+                historicalPriceService.fetchAndStoreHistoricalData(Symbol, assetType);
+            } else {
+                System.out.println("Historical data for symbol " + Symbol + " already exists. Skipping fetch.");
+            }
+        } catch(Exception e) {
+            System.err.println("Error fetching historical data: " + e.getMessage());
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
