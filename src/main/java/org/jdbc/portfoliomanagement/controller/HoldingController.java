@@ -1,6 +1,8 @@
 package org.jdbc.portfoliomanagement.controller;
 
+import org.jdbc.portfoliomanagement.entity.HistoricalPrice;
 import org.jdbc.portfoliomanagement.entity.Holding;
+import org.jdbc.portfoliomanagement.service.HistoricalPriceService;
 import org.jdbc.portfoliomanagement.service.HoldingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -60,5 +62,23 @@ public class HoldingController {
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("Holding Service is up and running!");
+    }
+
+
+    @Autowired
+    private HistoricalPriceService historicalPriceService;
+
+    @GetMapping("/historical/{symbol}")
+    public ResponseEntity<List<HistoricalPrice>> getHistoricalPrices(@PathVariable String symbol) {
+        List<HistoricalPrice> prices = historicalPriceService.getHistoricalPrices(symbol);
+        return ResponseEntity.ok(prices);
+    }
+
+    @PostMapping("/historical/fetch")
+    public ResponseEntity<List<HistoricalPrice>> fetchHistoricalData(
+            @RequestParam String symbol,
+            @RequestParam String assetType) {
+        List<HistoricalPrice> prices = historicalPriceService.fetchAndStoreHistoricalData(symbol, assetType);
+        return ResponseEntity.ok(prices);
     }
 }
