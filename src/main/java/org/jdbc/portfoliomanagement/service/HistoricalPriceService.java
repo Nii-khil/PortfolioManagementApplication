@@ -23,32 +23,19 @@ import java.util.*;
 @Service
 public class HistoricalPriceService {
 
-    private final HistoricalPriceRepository historicalPriceRepository;
+    @Autowired
+    private HistoricalPriceRepository historicalPriceRepository;
 
-    private final String alphaVantageApiKey;
+    @Autowired
+    private YahooFinanceService yahooFinanceService;
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public HistoricalPriceService(HistoricalPriceRepository historicalPriceRepository,
-                                  @Value("${alphavantage.api.key:demo}") String alphaVantageApiKey) {
-        this.historicalPriceRepository = historicalPriceRepository;
-        // Instantiate a local ObjectMapper to avoid requiring a container-managed bean
+    public HistoricalPriceService() {
+        this.webClient = WebClient.builder().build();
         this.objectMapper = new ObjectMapper();
-        this.alphaVantageApiKey = alphaVantageApiKey;
-
-        HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)
-                .responseTimeout(Duration.ofSeconds(30))
-                .doOnConnected(conn ->
-                        conn.addHandlerLast(new ReadTimeoutHandler(30))
-                                .addHandlerLast(new WriteTimeoutHandler(30)));
-
-        this.webClient = WebClient.builder()
-                .baseUrl("https://www.alphavantage.co")
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .build();
     }
 
     public List<HistoricalPrice> getHistoricalPrices(String symbol) {
@@ -89,49 +76,9 @@ public class HistoricalPriceService {
         List<HistoricalPrice> prices = new ArrayList<>();
 
         try {
-            String url = String.format(
-                    "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=%s&outputsize=compact&apikey=%s",
-                    symbol, alphaVantageApiKey
-            );
-            String response = webClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-            if (response == null || response.isEmpty()) return prices;
-
-            JsonNode jsonResponse = objectMapper.readTree(response);
-
-            if (jsonResponse.has("Note") || jsonResponse.has("Information")) {
-                System.err.println("API limit reached");
-                return prices;
-            }
-
-            JsonNode timeSeries = jsonResponse.get("Time Series (Daily)");
-            if (timeSeries != null) {
-                Iterator<Map.Entry<String, JsonNode>> fields = timeSeries.fields();
-                int count = 0;
-
-                while (fields.hasNext() && count < 30) {
-                    Map.Entry<String, JsonNode> entry = fields.next();
-                    String dateStr = entry.getKey();
-                    JsonNode dailyData = entry.getValue();
-
-                    LocalDate date = LocalDate.parse(dateStr);
-                    double closePrice = dailyData.get("4. close").asDouble();
-
-                    HistoricalPrice historicalPrice = new HistoricalPrice(
-                            symbol,
-                            BigDecimal.valueOf(closePrice),
-                            date
-                    );
-                    prices.add(historicalPrice);
-                    count++;
-                }
-
-                prices.sort(Comparator.comparing(HistoricalPrice::getPriceDate));
-            } else {
-                System.err.println("No time series data found for symbol: " + symbol);
+            List<YahooFinanceService.HistoricalData> historicalData = yahooFinanceService.getHistoricalData(symbol);
+            for(YahooFinanceService.HistoricalData dataPoint : historicalData) {
+                prices.add(new HistoricalPrice(dataPoint.getSymbol(), dataPoint.getPrice(), dataPoint.getDate()) );
             }
         } catch (Exception e) {
             System.err.println("Error fetching stock data for symbol: " + symbol);

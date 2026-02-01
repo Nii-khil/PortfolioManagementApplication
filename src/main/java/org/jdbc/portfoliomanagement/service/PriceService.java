@@ -1,5 +1,6 @@
 package org.jdbc.portfoliomanagement.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -11,8 +12,8 @@ import java.math.BigDecimal;
 @Service
 public class PriceService {
 
-    @Value("${alphavantage.api.key:demo}")
-    private String alphaVantageApiKey;
+    @Autowired
+    private YahooFinanceService yahooFinanceService;
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
@@ -34,33 +35,7 @@ public class PriceService {
     }
 
     private BigDecimal getStockPrice(String symbol) {
-        try {
-            String url = String.format(
-                    "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=%s",
-                    symbol, alphaVantageApiKey
-            );
-
-            String response = webClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-
-            JsonNode root = objectMapper.readTree(response);
-            JsonNode quote = root.path("Global Quote");
-
-            if (quote.isMissingNode() || quote.path("05. price").isMissingNode()) {
-                System.err.println("Alpha Vantage API limit or invalid symbol: " + symbol);
-                return BigDecimal.ZERO;
-            }
-
-            String priceStr = quote.path("05. price").asText();
-            return new BigDecimal(priceStr);
-
-        } catch (Exception e) {
-            System.err.println("Error fetching stock price for " + symbol + ": " + e.getMessage());
-            return BigDecimal.ZERO;
-        }
+        return yahooFinanceService.getCurrentPrice(symbol);
     }
 
     private BigDecimal getMutualFundPrice(String symbol) {
