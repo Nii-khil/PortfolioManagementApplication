@@ -4,12 +4,14 @@ import org.jdbc.portfoliomanagement.entity.HistoricalPrice;
 import org.jdbc.portfoliomanagement.entity.Holding;
 import org.jdbc.portfoliomanagement.service.HistoricalPriceService;
 import org.jdbc.portfoliomanagement.service.HoldingService;
+import org.jdbc.portfoliomanagement.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -17,6 +19,9 @@ public class HoldingController {
 
     @Autowired
     private HoldingService holdingService;
+
+    @Autowired
+    private PortfolioService portfolioService;
 
     @GetMapping("/holdings")
     public ResponseEntity<List<Holding>> getAllHoldings() {
@@ -94,5 +99,37 @@ public class HoldingController {
             @RequestParam String assetType) {
         List<HistoricalPrice> prices = historicalPriceService.fetchAndStoreHistoricalData(symbol, assetType);
         return ResponseEntity.ok(prices);
+    }
+
+    @GetMapping("/portfolio/summary")
+    public ResponseEntity<Map<String, Object>> getPortfolioSummary() {
+        Map<String, Object> summary = portfolioService.getPortfolioSummary();
+        return ResponseEntity.ok(summary);
+    }
+
+    @GetMapping("/portfolio/best-performer")
+    public ResponseEntity<Holding> getBestPerformer() {
+        Holding best = portfolioService.getBestPerformer();
+        if(best != null) {
+            return ResponseEntity.ok(best);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @GetMapping("/portfolio/worst-performer")
+    public ResponseEntity<Holding> getWorstPerformer() {
+        Holding worst = portfolioService.getWorstPerformer();
+        if (worst != null) {
+            return ResponseEntity.ok(worst);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @GetMapping("portfolio/diversification")
+    public ResponseEntity<Map<String, Object>> getDiversificationSuggestions() {
+        Map<String, Object> suggestions = portfolioService.getDiversificationSuggestions();
+        return ResponseEntity.ok(suggestions);
     }
 }
