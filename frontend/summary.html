@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Summary</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📊 Portfolio Management System</h1>
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="add-holding.html">Add Holding</a>
+            <a href="summary.html" class="active">Summary</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h2>Portfolio Summary</h2>
+            <button onclick="loadSummary()" class="btn-secondary">🔄 Refresh</button>
+        </div>
+
+        <div id="loading" class="loading">Loading summary...</div>
+        <div id="error" class="error-message" style="display: none;"></div>
+
+        <div id="summary-container" style="display: none;">
+            <!-- Key Metrics Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="total-value">₹0.00</div>
+                    <div class="metric-label">Total Portfolio Value</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="total-investment">₹0.00</div>
+                    <div class="metric-label">Total Investment</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="total-pl">₹0.00</div>
+                    <div class="metric-value" id="total-pl">$0.00</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">P/L Percentage</div>
+                    <div class="metric-value" id="total-pl-pct">0.00%</div>
+                </div>
+            </div>
+
+            <!-- Asset Composition -->
+            <div class="section">
+                <h3>Asset Composition</h3>
+                <div id="composition-container">
+                    <canvas id="composition-chart"></canvas>
+                </div>
+                <div id="composition-legend" class="composition-legend"></div>
+            </div>
+
+            <!-- Diversification Suggestions -->
+            <div class="section">
+                <h3>💡 Diversification Analysis</h3>
+                <div id="diversification-container" class="diversification-container">
+                    <div id="diversification-loading" class="loading" style="display: none;">
+                        Analyzing portfolio...
+                    </div>
+                    <div id="diversification-content"></div>
+                </div>
+            </div>
+
+            <!-- Historical Price Chart -->
+            <div class="section">
+                <h3>📈 Historical Price Analysis</h3>
+                <div class="historical-chart-controls">
+                    <label for="asset-selector">Select Stock/Mutual Fund:</label>
+                    <select id="asset-selector" onchange="loadHistoricalChart()">
+                        <option value="">-- Select an asset --</option>
+                    </select>
+                </div>
+                <div id="historical-chart-container">
+                    <canvas id="historical-chart"></canvas>
+                </div>
+                <p id="no-historical-data" style="display: none; text-align: center; color: #718096; padding: 40px;">
+                    Select a stock or mutual fund to view its price history
+                </p>
+            </div>
+
+            <!-- Performance -->
+            <div class="section">
+                <h3>Performance Highlights</h3>
+                <div class="performance-grid">
+                    <div class="performance-card">
+                        <h4>🏆 Best Performer</h4>
+                        <div id="best-performer">Loading...</div>
+                    </div>
+                    <div class="performance-card">
+                        <h4>📉 Worst Performer</h4>
+                        <div id="worst-performer">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Portfolio Management System - Team Echo</p>
+    </footer>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/summary.js"></script>
+</body>
+</html>

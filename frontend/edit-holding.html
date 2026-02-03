@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Holding - Portfolio Management</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📊 Portfolio Management System</h1>
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="add-holding.html">Add Holding</a>
+            <a href="summary.html">Summary</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h2>Edit Holding</h2>
+        </div>
+
+        <div class="form-container">
+            <form id="edit-holding-form">
+                <input type="hidden" id="holdingId">
+
+                <div class="form-group">
+                    <label for="assetType">Asset Type *</label>
+                    <select id="assetType" name="assetType" required onchange="updateFormForAssetType()">
+                        <option value="">Select Asset Type</option>
+                        <option value="STOCK">Stock</option>
+                        <option value="MUTUAL_FUND">Mutual Fund</option>
+                        <option value="CASH">Cash</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="symbol" id="symbolLabel">Symbol / Scheme Code *</label>
+                    <input type="text" id="symbol" name="symbol"
+                           placeholder="e.g., AAPL for stocks, 119551 for mutual funds"
+                           required maxlength="20">
+                    <small id="symbolHelp">Enter ticker symbol for stocks or scheme code for mutual funds</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity" id="quantityLabel">Quantity *</label>
+                    <input type="number" id="quantity" name="quantity"
+                           placeholder="0.00"
+                           step="0.01" min="0.01" required>
+                    <small id="quantityHelp">Number of shares (stocks) or units (mutual funds)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="purchasePrice" id="purchasePriceLabel">Purchase Price / NAV *</label>
+                    <input type="number" id="purchasePrice" name="purchasePrice"
+                           placeholder="0.00"
+                           step="0.01" min="0.01" required>
+                    <small id="purchasePriceHelp">Price per share or NAV per unit at purchase</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="purchaseDate">Purchase Date *</label>
+                    <input type="date" id="purchaseDate" name="purchaseDate" required>
+                </div>
+
+                <div class="form-group" id="categoryGroup">
+                    <label for="category">Category</label>
+                    <select id="category" name="category">
+                        <option value="">Select Category (Optional)</option>
+                        <!-- Stock categories -->
+                        <optgroup label="Stock Categories" id="stockCategories">
+                            <option value="Technology">Technology</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Consumer">Consumer Goods</option>
+                            <option value="Energy">Energy</option>
+                            <option value="Industrial">Industrial</option>
+                            <option value="RealEstate">Real Estate</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Materials">Materials</option>
+                            <option value="Communications">Communications</option>
+                            <option value="Other">Other</option>
+                        </optgroup>
+                        <!-- Mutual Fund categories -->
+                        <optgroup label="Mutual Fund Categories" id="mfCategories" style="display:none;">
+                            <option value="Equity">Equity</option>
+                            <option value="Debt">Debt</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="Index">Index</option>
+                            <option value="ELSS">ELSS</option>
+                        </optgroup>
+                    </select>
+                    <small id="categoryHelp">Select category for better portfolio analysis</small>
+                </div>
+
+                <div id="form-error" class="error-message" style="display: none;"></div>
+                <div id="form-success" class="success-message" style="display: none;"></div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="window.location.href='index.html'"
+                            class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary" id="submit-btn">
+                        Update Holding
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Portfolio Management System - Team Echo</p>
+    </footer>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/edit-holding.js"></script>
+</body>
+</html>
