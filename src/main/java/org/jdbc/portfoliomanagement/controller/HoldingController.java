@@ -31,7 +31,7 @@ public class HoldingController {
     }
 
     @GetMapping("/holdings/{id}")
-    public ResponseEntity<Holding> getHoldingById(@PathVariable Long id) {
+    public ResponseEntity<Holding> getHoldingById(@PathVariable("id") Long id) {
         return holdingService.getHoldingById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -58,14 +58,14 @@ public class HoldingController {
     }
 
     @PutMapping("/holdings/{id}")
-    public ResponseEntity<Holding> updateHolding(@PathVariable Long id, @RequestBody Holding holding) {
+    public ResponseEntity<Holding> updateHolding(@PathVariable("id") Long id, @RequestBody Holding holding) {
         return holdingService.updateHolding(id, holding)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/holdings/{id}")
-    public ResponseEntity<Void> deleteHolding(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteHolding(@PathVariable("id") Long id) {
         if (holdingService.deleteHolding(id)) {
             return ResponseEntity.noContent().build();
         } else {
@@ -74,7 +74,7 @@ public class HoldingController {
     }
 
     @GetMapping("/holdings/assetType/{assetType}")
-    public ResponseEntity<List<Holding>> getHoldingsByAssetType(@PathVariable String assetType) {
+    public ResponseEntity<List<Holding>> getHoldingsByAssetType(@PathVariable("assetType") String assetType) {
         List<Holding> holdings = holdingService.getHoldingsByAssetType(assetType);
         return ResponseEntity.ok(holdings);
     }
@@ -89,15 +89,15 @@ public class HoldingController {
     private HistoricalPriceService historicalPriceService;
 
     @GetMapping("/historical/{symbol}")
-    public ResponseEntity<List<HistoricalPrice>> getHistoricalPrices(@PathVariable String symbol) {
+    public ResponseEntity<List<HistoricalPrice>> getHistoricalPrices(@PathVariable("symbol") String symbol) {
         List<HistoricalPrice> prices = historicalPriceService.getHistoricalPrices(symbol);
         return ResponseEntity.ok(prices);
     }
 
     @PostMapping("/historical/fetch")
     public ResponseEntity<List<HistoricalPrice>> fetchHistoricalData(
-            @RequestParam String symbol,
-            @RequestParam String assetType) {
+            @RequestParam("symbol") String symbol,
+            @RequestParam("assetType") String assetType) {
         List<HistoricalPrice> prices = historicalPriceService.fetchAndStoreHistoricalData(symbol, assetType);
         return ResponseEntity.ok(prices);
     }
