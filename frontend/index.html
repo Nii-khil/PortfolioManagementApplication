@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Portfolio Management System</h1>
+        <nav>
+            <a href="index.html" class="active">Dashboard</a>
+            <a href="add-holding.html">Add Holding</a>
+            <a href="summary.html">Summary</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h2>My Holdings</h2>
+            <div class="actions">
+                <button onclick="refreshHoldings()" class="btn-secondary">🔄 Refresh</button>
+                <a href="add-holding.html" class="btn-primary">+ Add New Holding</a>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">Loading holdings...</div>
+        <div id="error" class="error-message" style="display: none;"></div>
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <p>No holdings in your portfolio yet.</p>
+            <a href="add-holding.html" class="btn-primary">Add Your First Holding</a>
+        </div>
+
+        <div id="holdings-container" style="display: none;">
+            <table id="holdings-table">
+                <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Asset Type</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Purchase Price</th>
+                    <th>Current Price</th>
+                    <th>Current Value</th>
+                    <th>Profit/Loss</th>
+                    <th>P/L %</th>
+                    <th>Purchase Date</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="holdings-body">
+                <!-- Holdings will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Portfolio Management System - Team Echo</p>
+    </footer>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/portfolio.js"></script>
+</body>
+</html>
