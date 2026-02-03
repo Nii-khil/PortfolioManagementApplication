@@ -30,7 +30,6 @@
                         <option value="">Select Asset Type</option>
                         <option value="STOCK">Stock</option>
                         <option value="MUTUAL_FUND">Mutual Fund</option>
-                        <option value="CASH">Cash</option>
                     </select>
                 </div>
 
@@ -40,6 +39,13 @@
                            placeholder="e.g., AAPL for stocks, 119551 for mutual funds"
                            required maxlength="20">
                     <small id="symbolHelp">Enter ticker symbol for stocks or scheme code for mutual funds</small>
+
+                    <!-- Stock lookup UI -->
+                    <div id="stock-lookup" style="display:none; margin-top:8px;">
+                        <input type="text" id="symbolSearch" placeholder="Search stocks by name or symbol" maxlength="50">
+                        <div id="symbolSuggestions" class="suggestions" style="display:none; border:1px solid #ccc; max-height:180px; overflow:auto; background:#fff;"></div>
+                        <div id="stockLookupInfo" style="display:none; margin-top:6px; font-size:0.9em; color:#333;"></div>
+                    </div>
                 </div>
 
                 <div class="form-group">

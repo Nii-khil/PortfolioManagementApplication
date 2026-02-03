@@ -37,16 +37,6 @@ function updateFormForAssetType() {
         stockCategories.style.display = 'none';
         mfCategories.style.display = '';
         categoryHelp.textContent = 'Select fund category (Equity, Debt, Hybrid, Index, ELSS)';
-    } else if (assetType === 'CASH') {
-        symbolLabel.textContent = 'Currency *';
-        symbolHelp.textContent = 'Enter currency code (e.g., USD, EUR, GBP)';
-        quantityLabel.textContent = 'Amount *';
-        quantityHelp.textContent = 'Cash amount';
-        purchasePriceLabel.textContent = 'Exchange Rate *';
-        purchasePriceHelp.textContent = 'Exchange rate (use 1.00 for base currency)';
-        stockCategories.style.display = 'none';
-        mfCategories.style.display = 'none';
-        categoryHelp.textContent = 'Category not applicable for cash';
     }
 }
 

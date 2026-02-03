@@ -1,4 +1,3 @@
-
 // API Configuration
 const API_BASE_URL = 'http://localhost:8081/api';
 
@@ -127,6 +126,21 @@ const portfolioAPI = {
     }
 };
 
+const assetLookupAPI = {
+    searchStocks: async (q) => {
+        return await api.get(`/search/stocks?query=${encodeURIComponent(q)}`);
+    },
+    getStockDetails: async (symbol) => {
+        return await api.get(`/search/stocks/${encodeURIComponent(symbol)}`);
+    },
+    searchMutualFunds: async (q) => {
+        return await api.get(`/search/mutualfunds?query=${encodeURIComponent(q)}`);
+    },
+    getMutualFundDetails: async (schemeCode) => {
+        return await api.get(`/search/mutualfunds/${encodeURIComponent(schemeCode)}`);
+    }
+};
+
 function formatCurrency(amount, assetTypeOrCurrency) {
     if (amount === null || amount === undefined) return '₹0.00';
 
@@ -211,3 +225,8 @@ function showSuccess(elementId, message) {
         }, 3000);
     }
 }
+
+// expose APIs globally (they're already referenced directly in other scripts)
+window.holdingsAPI = holdingsAPI;
+window.portfolioAPI = portfolioAPI;
+window.assetLookupAPI = assetLookupAPI;
