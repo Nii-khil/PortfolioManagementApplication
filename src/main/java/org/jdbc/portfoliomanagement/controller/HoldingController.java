@@ -2,6 +2,7 @@ package org.jdbc.portfoliomanagement.controller;
 
 import org.jdbc.portfoliomanagement.entity.HistoricalPrice;
 import org.jdbc.portfoliomanagement.entity.Holding;
+import org.jdbc.portfoliomanagement.service.AssetLookupService;
 import org.jdbc.portfoliomanagement.service.HistoricalPriceService;
 import org.jdbc.portfoliomanagement.service.HoldingService;
 import org.jdbc.portfoliomanagement.service.PortfolioService;
@@ -23,6 +24,12 @@ public class HoldingController {
 
     @Autowired
     private PortfolioService portfolioService;
+
+    @Autowired
+    private HistoricalPriceService historicalPriceService;
+
+    @Autowired
+    private AssetLookupService assetLookupService;
 
     @GetMapping("/holdings")
     public ResponseEntity<List<Holding>> getAllHoldings() {
@@ -84,10 +91,6 @@ public class HoldingController {
         return ResponseEntity.ok("Holding Service is up and running!");
     }
 
-
-    @Autowired
-    private HistoricalPriceService historicalPriceService;
-
     @GetMapping("/historical/{symbol}")
     public ResponseEntity<List<HistoricalPrice>> getHistoricalPrices(@PathVariable("symbol") String symbol) {
         List<HistoricalPrice> prices = historicalPriceService.getHistoricalPrices(symbol);
@@ -126,6 +129,30 @@ public class HoldingController {
         } else {
             return ResponseEntity.noContent().build();
         }
+    }
+
+    @GetMapping("/search/stocks")
+    public ResponseEntity<Map<String, Object>> searchStocks(@RequestParam("query") String query) {
+        Map<String, Object> res = assetLookupService.searchStocks(query);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/search/stocks/{symbol}")
+    public ResponseEntity<Map<String, Object>> getStockDetails(@PathVariable("symbol") String symbol) {
+        Map<String, Object> res = assetLookupService.getStockDetails(symbol);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/search/mutualfunds")
+    public ResponseEntity<Map<String, Object>> searchMutualFunds(@RequestParam("query") String query) {
+        Map<String, Object> res = assetLookupService.searchMutualFunds(query);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/search/mutualfunds/{schemeCode}")
+    public ResponseEntity<Map<String, Object>> getMutualFundDetails(@PathVariable("schemeCode") String schemeCode) {
+        Map<String, Object> res = assetLookupService.getMutualFundDetails(schemeCode);
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("portfolio/diversification")
