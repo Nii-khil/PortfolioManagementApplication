@@ -56,18 +56,6 @@ function updateFormForAssetType() {
         categoryHelp.textContent = 'Select fund category (Equity, Debt, Hybrid, Index, ELSS)';
         if (stockLookup) stockLookup.style.display = 'block'; // show the same lookup UI for mutual funds
         if (symbolInput) symbolInput.readOnly = true; // enforce selection-only
-    } else if (assetType === 'CASH') {
-        symbolLabel.textContent = 'Currency *';
-        symbolHelp.textContent = 'Enter currency code (e.g., USD, EUR, GBP)';
-        quantityLabel.textContent = 'Amount *';
-        quantityHelp.textContent = 'Cash amount';
-        purchasePriceLabel.textContent = 'Exchange Rate *';
-        purchasePriceHelp.textContent = 'Exchange rate (use 1.00 for base currency)';
-        stockCategories.style.display = 'none';
-        mfCategories.style.display = 'none';
-        categoryHelp.textContent = 'Category not applicable for cash';
-        stockLookup.style.display = 'none';
-        if (symbolInput) symbolInput.readOnly = false;
     } else {
         stockLookup.style.display = 'none';
         if (symbolInput) symbolInput.readOnly = false;
@@ -90,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Wire up symbolSearch input
     const symbolSearch = document.getElementById('symbolSearch');
     if (symbolSearch) {
-        symbolSearch.addEventListener('input', debounce(onSymbolSearchInput, 300));
+        symbolSearch.addEventListener('input', onSymbolSearchInput);
         // prevent form submission when enter pressed in search — force selection
         symbolSearch.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {

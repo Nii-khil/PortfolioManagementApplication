@@ -85,7 +85,6 @@ function displayComposition(composition) {
     const colors = {
         'STOCK': '#667eea',
         'MUTUAL_FUND': '#48bb78',
-        'CASH': '#ed8936',
         'default': '#a0aec0'
     };
 
