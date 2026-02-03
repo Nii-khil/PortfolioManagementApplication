@@ -46,7 +46,7 @@ public class PortfolioService {
 
             BigDecimal purchaseValue = holding.getPurchasePrice().multiply(holding.getQuantity());
             BigDecimal purchaseValueInr = currencyConversionService.convertToInr(purchaseValue, holding.getAssetType());
-            totalInvestmentInr = totalCurrentValueInr.add(purchaseValueInr);
+            totalInvestmentInr = totalInvestmentInr.add(purchaseValueInr);
 
             String assetType = holding.getAssetType();
             BigDecimal currentAssetValue = assetCompositionMap.getOrDefault(assetType, BigDecimal.ZERO);

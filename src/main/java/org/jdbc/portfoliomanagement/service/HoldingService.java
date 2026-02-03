@@ -34,6 +34,11 @@ public class HoldingService {
     }
 
     public Holding createHolding(Holding holding) {
+        // Normalize asset type for consistency
+        if (holding.getAssetType() != null) {
+            holding.setAssetType(holding.getAssetType().toUpperCase());
+        }
+
         Holding savedHolding = holdingRepository.save(holding);
         addCalculatedFields(savedHolding);
         return savedHolding;
@@ -42,7 +47,13 @@ public class HoldingService {
     public Optional<Holding> updateHolding(Long id, Holding holdingDetails) {
         return holdingRepository.findById(id)
                 .map(holding -> {
-                    holding.setAssetType(holdingDetails.getAssetType());
+                    // Normalize asset type from incoming details
+                    if (holdingDetails.getAssetType() != null) {
+                        holding.setAssetType(holdingDetails.getAssetType().toUpperCase());
+                    } else {
+                        holding.setAssetType(holdingDetails.getAssetType());
+                    }
+
                     holding.setSymbol(holdingDetails.getSymbol());
                     holding.setQuantity(holdingDetails.getQuantity());
                     holding.setPurchasePrice(holdingDetails.getPurchasePrice());
@@ -68,6 +79,10 @@ public class HoldingService {
     }
 
     private void addCalculatedFields(Holding holding) {
+        // Normalize asset type to uppercase so downstream services (price/currency) work reliably
+        if (holding.getAssetType() != null) {
+            holding.setAssetType(holding.getAssetType().toUpperCase());
+        }
         BigDecimal currentPrice = priceService.getCurrentPrice(holding.getSymbol(), holding.getAssetType());
         holding.setCurrentPrice(currentPrice);
 

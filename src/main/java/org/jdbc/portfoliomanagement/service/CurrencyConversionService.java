@@ -11,14 +11,14 @@ import java.math.RoundingMode;
 
 @Service
 public class CurrencyConversionService {
-    @Value("${currency.default.rate.usd-to-inr:91.0}")
-    private double defaultUsdToInrRate;
+    @Value("${currency.default.rate.usd-to-inr:89.0}")
+    private Double defaultUsdToInrRate;
 
-    private final WebClient webclient;
+    private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
     public CurrencyConversionService() {
-        this.webclient = WebClient.builder().build();
+        this.webClient = WebClient.builder().build();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -43,7 +43,7 @@ public class CurrencyConversionService {
         try {
             String url = "https://api.exchangerate-api.com/v4/latest/USD";
 
-            String response = webclient.get()
+            String response = webClient.get()
                     .uri(url)
                     .retrieve()
                     .bodyToMono(String.class)

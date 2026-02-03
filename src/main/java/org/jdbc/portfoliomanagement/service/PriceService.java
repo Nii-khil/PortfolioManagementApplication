@@ -1,7 +1,6 @@
 package org.jdbc.portfoliomanagement.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,9 +23,10 @@ public class PriceService {
     }
 
     public BigDecimal getCurrentPrice(String symbol, String assetType) {
-        if ("STOCK".equals(assetType)) {
+        String type = assetType == null ? "" : assetType.toUpperCase();
+        if ("STOCK".equals(type)) {
             return getStockPrice(symbol);
-        } else if ("MUTUAL_FUND".equals(assetType)) {
+        } else if ("MUTUAL_FUND".equals(type)) {
             return getMutualFundPrice(symbol);
         } else {
             System.err.println("Unsupported asset type: " + assetType);
