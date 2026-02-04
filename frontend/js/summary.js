@@ -249,83 +249,59 @@ async function loadHistoricalChart() {
         return;
     }
 
-    // Get asset type from the selected option
     const selectedOption = assetSelector.options[assetSelector.selectedIndex];
-    const assetType = selectedOption.getAttribute('data-asset-type');
+    const assetType = selectedOption ? selectedOption.getAttribute('data-asset-type') : null;
 
     try {
-        // Show loading message
         noDataMsg.textContent = 'Loading historical data...';
         noDataMsg.style.display = 'block';
         chartContainer.style.display = 'none';
 
-        // Fetch historical data
-        const response = await fetch(`http://localhost:8081/api/historical/${symbol}`);
-
+        const response = await fetch(`http://localhost:8081/api/historical/${encodeURIComponent(symbol)}`);
         if (!response.ok) {
-            throw new Error('Failed to fetch historical data');
+            throw new Error('Failed to fetch historical data from backend');
         }
 
-        const historicalData = await response.json();
+        let historicalData = await response.json();
 
+        // if no data present in DB, trigger fetch-from-external-API endpoint
         if (!historicalData || historicalData.length === 0) {
-            // No data in database, trigger fetch from API
-            console.log(`No historical data found for ${symbol}, fetching from API...`);
+            console.log(`No historical data found for ${symbol} in DB, requesting from external API`);
 
-            // Trigger API fetch
             const fetchResponse = await fetch(
-                `http://localhost:8081/api/historical/fetch?symbol=${symbol}&assetType=${assetType}`,
+                `http://localhost:8081/api/historical/fetch?symbol=${encodeURIComponent(symbol)}&assetType=${encodeURIComponent(assetType)}`,
                 { method: 'POST' }
             );
 
             if (!fetchResponse.ok) {
-                throw new Error('Failed to fetch data from external API');
+                throw new Error('Failed to request historical data from external API');
             }
 
-            // Wait a bit and retry getting the data
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            const retryResponse = await fetch(`http://localhost:8081/api/historical/${symbol}`);
-            const retryData = await retryResponse.json();
-
-            if (!retryData || retryData.length === 0) {
-                noDataMsg.innerHTML = `
-                    <strong>⚠️ No historical data available for ${symbol}</strong><br>
-                    The data was requested but nothing was returned.<br>
-                    This could mean:<br>
-                    • API rate limit exceeded (25 requests/day)<br>
-                    • Invalid symbol<br>
-                    • API service issues<br><br>
-                    <em>Try testing with a mutual fund instead - they have unlimited API access!</em>
-                `;
-                noDataMsg.style.display = 'block';
-                chartContainer.style.display = 'none';
-                return;
+            await new Promise(resolve => setTimeout(resolve, 1200));
+            const retryResponse = await fetch(`http://localhost:8081/api/historical/${encodeURIComponent(symbol)}`);
+            if (!retryResponse.ok) {
+                throw new Error('Failed to re-fetch historical data after requesting external API');
             }
-
-            displayHistoricalChart(retryData, symbol, assetType);
-        } else {
-            displayHistoricalChart(historicalData, symbol, assetType);
+            historicalData = await retryResponse.json();
         }
+
+        if (!historicalData || historicalData.length === 0) {
+            noDataMsg.innerHTML = `\n                <strong>⚠️ No historical data available</strong>            `;
+            noDataMsg.style.display = 'block';
+            chartContainer.style.display = 'none';
+            return;
+        }
+
+        displayHistoricalChart(historicalData, symbol, assetType);
 
     } catch (error) {
         console.error('Error loading historical data:', error);
-        noDataMsg.innerHTML = `
-            <strong>⚠️ Error loading historical data</strong><br>
-            ${error.message}<br><br>
-            <em>Common causes:</em><br>
-            • Alpha Vantage API rate limit (25 requests/day)<br>
-            • Network connectivity issues<br>
-            • Backend server not running<br><br>
-            <strong>Solution:</strong> Try selecting a mutual fund instead - they have unlimited API access!
-        `;
+        noDataMsg.innerHTML = `\n            <strong>⚠️ Error loading historical data</strong><br>\n            ${error.message}\n        `;
         noDataMsg.style.display = 'block';
         chartContainer.style.display = 'none';
     }
 }
 
-/**
- * Display the historical chart with data
- */
 function displayHistoricalChart(historicalData, symbol, assetType) {
     const chartContainer = document.getElementById('historical-chart-container');
     const noDataMsg = document.getElementById('no-historical-data');
@@ -333,26 +309,24 @@ function displayHistoricalChart(historicalData, symbol, assetType) {
     noDataMsg.style.display = 'none';
     chartContainer.style.display = 'block';
 
-    // Prepare data for chart
     const dates = historicalData.map(item => {
-        const date = new Date(item.priceDate);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const d = new Date(item.priceDate);
+        if (isNaN(d)) {
+            return item.priceDate;
+        }
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     });
-    const prices = historicalData.map(item => item.price);
 
-    // Determine label based on asset type
+    const prices = historicalData.map(item => {
+        const n = Number(item.price);
+        return isNaN(n) ? 0 : n;
+    });
+
     const priceLabel = assetType === 'MUTUAL_FUND' ? 'NAV' : 'Price';
 
-    // Draw line chart
-    drawHistoricalChart(dates, prices, symbol, priceLabel);
+    drawHistoricalChart(dates, prices, symbol, assetType, priceLabel);
 }
 
-/**
- * Draw historical price line chart
- */
-/**
- * Draw historical price line chart for both Stocks and Mutual Funds
- */
 function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Price') {
     const canvas = document.getElementById('historical-chart');
     const ctx = canvas.getContext('2d');
@@ -371,10 +345,22 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
     const chartWidth = width - 2 * padding;
     const chartHeight = height - 2 * padding;
 
+    const cleanPrices = prices.map(p => {
+        const n = Number(p);
+        return isNaN(n) ? 0 : n;
+    });
+
     // Find min and max prices
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    const priceRange = maxPrice - minPrice;
+    const minPrice = Math.min(...cleanPrices);
+    const maxPrice = Math.max(...cleanPrices);
+    let priceRange = maxPrice - minPrice;
+    if (priceRange === 0) {
+        // Prevent division by zero when all prices are the same; show a small range so chart renders
+        priceRange = maxPrice === 0 ? 1 : Math.abs(maxPrice) * 0.01;
+    }
+
+    // handling case where there's only a single data point
+    const steps = Math.max(1, cleanPrices.length - 1);
 
     // Draw axes
     ctx.strokeStyle = '#e2e8f0';
@@ -409,8 +395,8 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
     ctx.lineWidth = 3;
     ctx.beginPath();
 
-    prices.forEach((price, index) => {
-        const x = padding + (chartWidth / (prices.length - 1)) * index;
+    cleanPrices.forEach((price, index) => {
+        const x = padding + (chartWidth / steps) * index;
         const y = height - padding - ((price - minPrice) / priceRange) * chartHeight;
 
         if (index === 0) {
@@ -423,8 +409,8 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
     ctx.stroke();
 
     // Draw points
-    prices.forEach((price, index) => {
-        const x = padding + (chartWidth / (prices.length - 1)) * index;
+    cleanPrices.forEach((price, index) => {
+        const x = padding + (chartWidth / steps) * index;
         const y = height - padding - ((price - minPrice) / priceRange) * chartHeight;
 
         ctx.fillStyle = '#667eea';
@@ -445,106 +431,13 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
     ctx.font = '11px Arial';
     ctx.textAlign = 'center';
     for (let i = 0; i < dates.length; i += 5) {
-        const x = padding + (chartWidth / (prices.length - 1)) * i;
+        const x = padding + (chartWidth / steps) * i;
         ctx.fillText(dates[i], x, height - padding + 20);
     }
 
     currentHistoricalChart = true;
 }
 
-/**
- * Load historical data and display chart
- */
-async function loadHistoricalChart() {
-    const assetSelector = document.getElementById('asset-selector');
-    const symbol = assetSelector.value;
-    const chartContainer = document.getElementById('historical-chart-container');
-    const noDataMsg = document.getElementById('no-historical-data');
-
-    if (!symbol) {
-        noDataMsg.textContent = 'Select a stock or mutual fund to view its price history';
-        noDataMsg.style.display = 'block';
-        chartContainer.style.display = 'none';
-        return;
-    }
-
-    // Get asset type from the selected option
-    const selectedOption = assetSelector.options[assetSelector.selectedIndex];
-    const assetType = selectedOption.getAttribute('data-asset-type');
-
-    try {
-        // Show loading message
-        noDataMsg.textContent = 'Loading historical data...';
-        noDataMsg.style.display = 'block';
-        chartContainer.style.display = 'none';
-
-        // Fetch historical data based on asset type
-        let historicalData;
-        if (assetType === 'MUTUAL_FUND') {
-            historicalData = await fetchHistoricalDataForMutualFund(symbol);
-        } else if (assetType === 'STOCK') {
-            historicalData = await fetchHistoricalDataForStock(symbol);
-        }
-
-        if (!historicalData || historicalData.length === 0) {
-            throw new Error('No data available');
-        }
-
-        // Parse dates and prices from the data
-        const dates = historicalData.map(item => {
-            const date = new Date(item.date);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        });
-        const prices = historicalData.map(item => item.price);
-
-        // Display the chart
-        displayHistoricalChart(dates, prices, symbol, assetType);
-    } catch (error) {
-        console.error('Error loading historical data:', error);
-        noDataMsg.innerHTML = `⚠️ ${error.message}`;
-        noDataMsg.style.display = 'block';
-        chartContainer.style.display = 'none';
-    }
-}
-
-/**
- * Fetch historical data for stocks
- */
-async function fetchHistoricalDataForStock(symbol) {
-    const response = await fetch(`http://localhost:8081/api/historical/${symbol}`);
-    if (!response.ok) {
-        throw new Error('Failed to fetch historical data for stock');
-    }
-    return await response.json();
-}
-
-/**
- * Fetch historical data for mutual funds
- */
-async function fetchHistoricalDataForMutualFund(symbol) {
-    const response = await fetch(`http://localhost:8081/api/mutualfunds/${symbol}/historical`);
-    if (!response.ok) {
-        throw new Error('Failed to fetch historical data for mutual fund');
-    }
-    return await response.json();
-}
-
-/**
- * Display the historical chart with data
- */
-function displayHistoricalChart(dates, prices, symbol, assetType) {
-    const chartContainer = document.getElementById('historical-chart-container');
-    const noDataMsg = document.getElementById('no-historical-data');
-
-    noDataMsg.style.display = 'none';
-    chartContainer.style.display = 'block';
-
-    // Determine price label based on asset type
-    const priceLabel = assetType === 'MUTUAL_FUND' ? 'NAV' : 'Price';
-
-    // Draw the chart
-    drawHistoricalChart(dates, prices, symbol, assetType, priceLabel);
-}
 
 // Optional: Re-draw the chart on window resize for responsiveness
 window.addEventListener('resize', () => {
