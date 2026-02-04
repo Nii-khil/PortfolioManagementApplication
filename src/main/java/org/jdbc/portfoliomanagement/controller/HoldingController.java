@@ -2,10 +2,8 @@ package org.jdbc.portfoliomanagement.controller;
 
 import org.jdbc.portfoliomanagement.entity.HistoricalPrice;
 import org.jdbc.portfoliomanagement.entity.Holding;
-import org.jdbc.portfoliomanagement.service.AssetLookupService;
 import org.jdbc.portfoliomanagement.service.HistoricalPriceService;
 import org.jdbc.portfoliomanagement.service.HoldingService;
-import org.jdbc.portfoliomanagement.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +21,7 @@ public class HoldingController {
     private HoldingService holdingService;
 
     @Autowired
-    private PortfolioService portfolioService;
-
-    @Autowired
     private HistoricalPriceService historicalPriceService;
-
-    @Autowired
-    private AssetLookupService assetLookupService;
 
     @GetMapping("/holdings")
     public ResponseEntity<List<Holding>> getAllHoldings() {
@@ -107,13 +99,13 @@ public class HoldingController {
 
     @GetMapping("/portfolio/summary")
     public ResponseEntity<Map<String, Object>> getPortfolioSummary() {
-        Map<String, Object> summary = portfolioService.getPortfolioSummary();
+        Map<String, Object> summary = holdingService.getPortfolioSummary();
         return ResponseEntity.ok(summary);
     }
 
     @GetMapping("/portfolio/best-performer")
     public ResponseEntity<Holding> getBestPerformer() {
-        Holding best = portfolioService.getBestPerformer();
+        Holding best = holdingService.getBestPerformer();
         if(best != null) {
             return ResponseEntity.ok(best);
         } else {
@@ -123,7 +115,7 @@ public class HoldingController {
 
     @GetMapping("/portfolio/worst-performer")
     public ResponseEntity<Holding> getWorstPerformer() {
-        Holding worst = portfolioService.getWorstPerformer();
+        Holding worst = holdingService.getWorstPerformer();
         if (worst != null) {
             return ResponseEntity.ok(worst);
         } else {
@@ -133,31 +125,31 @@ public class HoldingController {
 
     @GetMapping("/search/stocks")
     public ResponseEntity<Map<String, Object>> searchStocks(@RequestParam("query") String query) {
-        Map<String, Object> res = assetLookupService.searchStocks(query);
+        Map<String, Object> res = holdingService.searchStocks(query);
         return ResponseEntity.ok(res);
     }
 
     @GetMapping("/search/stocks/{symbol}")
     public ResponseEntity<Map<String, Object>> getStockDetails(@PathVariable("symbol") String symbol) {
-        Map<String, Object> res = assetLookupService.getStockDetails(symbol);
+        Map<String, Object> res = holdingService.getStockDetails(symbol);
         return ResponseEntity.ok(res);
     }
 
     @GetMapping("/search/mutualfunds")
     public ResponseEntity<Map<String, Object>> searchMutualFunds(@RequestParam("query") String query) {
-        Map<String, Object> res = assetLookupService.searchMutualFunds(query);
+        Map<String, Object> res = holdingService.searchMutualFunds(query);
         return ResponseEntity.ok(res);
     }
 
     @GetMapping("/search/mutualfunds/{schemeCode}")
     public ResponseEntity<Map<String, Object>> getMutualFundDetails(@PathVariable("schemeCode") String schemeCode) {
-        Map<String, Object> res = assetLookupService.getMutualFundDetails(schemeCode);
+        Map<String, Object> res = holdingService.getMutualFundDetails(schemeCode);
         return ResponseEntity.ok(res);
     }
 
     @GetMapping("portfolio/diversification")
     public ResponseEntity<Map<String, Object>> getDiversificationSuggestions() {
-        Map<String, Object> suggestions = portfolioService.getDiversificationSuggestions();
+        Map<String, Object> suggestions = holdingService.getDiversificationSuggestions();
         return ResponseEntity.ok(suggestions);
     }
 }
