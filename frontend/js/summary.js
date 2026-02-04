@@ -350,18 +350,20 @@ function displayHistoricalChart(historicalData, symbol, assetType) {
 /**
  * Draw historical price line chart
  */
-function drawHistoricalChart(dates, prices, symbol, priceLabel = 'Price') {
+/**
+ * Draw historical price line chart for both Stocks and Mutual Funds
+ */
+function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Price') {
     const canvas = document.getElementById('historical-chart');
     const ctx = canvas.getContext('2d');
 
-    // Clear previous chart
-    if (currentHistoricalChart) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
+    // Dynamically adjust the canvas size based on the parent container's width
+    const chartContainer = canvas.parentElement;  // The container of the canvas
+    canvas.width = chartContainer.offsetWidth;  // Set canvas width to the container's width
+    canvas.height = 300;  // Set a fixed height, or adjust as needed
 
-    // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = 300;
+    // Clear previous chart content
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const width = canvas.width;
     const height = canvas.height;
@@ -449,3 +451,110 @@ function drawHistoricalChart(dates, prices, symbol, priceLabel = 'Price') {
 
     currentHistoricalChart = true;
 }
+
+/**
+ * Load historical data and display chart
+ */
+async function loadHistoricalChart() {
+    const assetSelector = document.getElementById('asset-selector');
+    const symbol = assetSelector.value;
+    const chartContainer = document.getElementById('historical-chart-container');
+    const noDataMsg = document.getElementById('no-historical-data');
+
+    if (!symbol) {
+        noDataMsg.textContent = 'Select a stock or mutual fund to view its price history';
+        noDataMsg.style.display = 'block';
+        chartContainer.style.display = 'none';
+        return;
+    }
+
+    // Get asset type from the selected option
+    const selectedOption = assetSelector.options[assetSelector.selectedIndex];
+    const assetType = selectedOption.getAttribute('data-asset-type');
+
+    try {
+        // Show loading message
+        noDataMsg.textContent = 'Loading historical data...';
+        noDataMsg.style.display = 'block';
+        chartContainer.style.display = 'none';
+
+        // Fetch historical data based on asset type
+        let historicalData;
+        if (assetType === 'MUTUAL_FUND') {
+            historicalData = await fetchHistoricalDataForMutualFund(symbol);
+        } else if (assetType === 'STOCK') {
+            historicalData = await fetchHistoricalDataForStock(symbol);
+        }
+
+        if (!historicalData || historicalData.length === 0) {
+            throw new Error('No data available');
+        }
+
+        // Parse dates and prices from the data
+        const dates = historicalData.map(item => {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        const prices = historicalData.map(item => item.price);
+
+        // Display the chart
+        displayHistoricalChart(dates, prices, symbol, assetType);
+    } catch (error) {
+        console.error('Error loading historical data:', error);
+        noDataMsg.innerHTML = `⚠️ ${error.message}`;
+        noDataMsg.style.display = 'block';
+        chartContainer.style.display = 'none';
+    }
+}
+
+/**
+ * Fetch historical data for stocks
+ */
+async function fetchHistoricalDataForStock(symbol) {
+    const response = await fetch(`http://localhost:8081/api/historical/${symbol}`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch historical data for stock');
+    }
+    return await response.json();
+}
+
+/**
+ * Fetch historical data for mutual funds
+ */
+async function fetchHistoricalDataForMutualFund(symbol) {
+    const response = await fetch(`http://localhost:8081/api/mutualfunds/${symbol}/historical`);
+    if (!response.ok) {
+        throw new Error('Failed to fetch historical data for mutual fund');
+    }
+    return await response.json();
+}
+
+/**
+ * Display the historical chart with data
+ */
+function displayHistoricalChart(dates, prices, symbol, assetType) {
+    const chartContainer = document.getElementById('historical-chart-container');
+    const noDataMsg = document.getElementById('no-historical-data');
+
+    noDataMsg.style.display = 'none';
+    chartContainer.style.display = 'block';
+
+    // Determine price label based on asset type
+    const priceLabel = assetType === 'MUTUAL_FUND' ? 'NAV' : 'Price';
+
+    // Draw the chart
+    drawHistoricalChart(dates, prices, symbol, assetType, priceLabel);
+}
+
+// Optional: Re-draw the chart on window resize for responsiveness
+window.addEventListener('resize', () => {
+    if (currentHistoricalChart) {
+        const assetSelector = document.getElementById('asset-selector');
+        const symbol = assetSelector.value;
+        const assetType = assetSelector.options[assetSelector.selectedIndex].getAttribute('data-asset-type');
+        const priceLabel = assetType === 'MUTUAL_FUND' ? 'NAV' : 'Price';
+
+        // Reload and re-render the chart when the window is resized
+        loadHistoricalChart();  // This will adjust the chart for the new window size
+    }
+});
