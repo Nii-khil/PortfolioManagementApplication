@@ -1,5 +1,8 @@
 // Portfolio Dashboard JavaScript
 
+// simple cache for names to avoid repeated lookups
+const nameCache = {};
+
 // load holdings when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadHoldings();
@@ -36,6 +39,8 @@ async function loadHoldings() {
         holdings.forEach(holding => {
             const row = createHoldingRow(holding);
             holdingsBody.appendChild(row);
+            // asynchronously fetch and update friendly name
+            updateHoldingDisplayName(holding).catch(err => console.debug('Name lookup failed', err));
         });
 
         holdingsContainer.style.display = 'block';
@@ -57,8 +62,11 @@ function createHoldingRow(holding) {
     // Get currency symbol based on asset type
     const currencySymbol = holding.currencySymbol || (holding.assetType === 'STOCK' ? '$' : '₹');
 
+    // Use a display span for symbol so we can update it later without affecting the underlying value
+    const symbolDisplayId = `symbol-display-${holding.id}`;
+
     row.innerHTML = `
-        <td><strong>${holding.symbol}</strong></td>
+        <td><strong id="${symbolDisplayId}">${holding.symbol}</strong></td>
         <td>${holding.assetType}</td>
         <td>${holding.category || '-'}</td>
         <td>${holding.quantity}</td>
@@ -82,18 +90,67 @@ function createHoldingRow(holding) {
     return row;
 }
 
+async function updateHoldingDisplayName(holding) {
+    const key = `${holding.assetType}|${holding.symbol}`;
+    const displayEl = document.getElementById(`symbol-display-${holding.id}`);
+    if (!displayEl) return;
+
+    if (nameCache[key]) {
+        displayEl.textContent = nameCache[key];
+        return;
+    }
+
+    try {
+        if (holding.assetType === 'MUTUAL_FUND') {
+            // mutual funds: fetch scheme name
+            const details = await assetLookupAPI.getMutualFundDetails(holding.symbol);
+            const schemeName = details && details.schemeName ? details.schemeName : null;
+            const text = schemeName ? `${schemeName} — ${holding.symbol}` : holding.symbol;
+            displayEl.textContent = text;
+            nameCache[key] = text;
+        } else if (holding.assetType === 'STOCK') {
+            // stocks: search for stock to get friendly name
+            const res = await assetLookupAPI.searchStocks(holding.symbol);
+            const matches = res && (res.matches || res.results) ? (res.matches || res.results) : [];
+            let foundName = null;
+            for (const m of matches) {
+                if (m.symbol && m.symbol.toUpperCase() === holding.symbol.toUpperCase()) {
+                    foundName = m.name || m.shortname || m.longname || null;
+                    break;
+                }
+            }
+            const text = foundName ? `${holding.symbol} — ${foundName}` : holding.symbol;
+            displayEl.textContent = text;
+            nameCache[key] = text;
+        } else {
+            // default: just show symbol
+            displayEl.textContent = holding.symbol;
+            nameCache[key] = holding.symbol;
+        }
+    } catch (err) {
+        console.debug('Failed to fetch display name for', key, err);
+        // fallback: show symbol
+        displayEl.textContent = holding.symbol;
+        nameCache[key] = holding.symbol;
+    }
+}
+
 function editHolding(id) {
     window.location.href = `edit-holding.html?id=${id}`;
 }
 
 async function deleteHolding(id, symbol) {
-    if (!confirm(`Are you sure you want to delete ${symbol}?`)) {
+    // show friendly name if we have it cached
+    const assetKeyStarts = Object.keys(nameCache).find(k => k.endsWith('|'+symbol));
+    const displayName = assetKeyStarts ? nameCache[assetKeyStarts] : symbol;
+
+    if (!confirm(`Are you sure you want to delete ${displayName}?`)) {
         return;
     }
 
     try {
         await holdingsAPI.delete(id);
-        alert(`${symbol} has been deleted successfully.`);
+        alert(`${displayName} has been deleted successfully.`);
         loadHoldings(); // Reload the list
     } catch (error) {
         console.error('Error deleting holding:', error);
