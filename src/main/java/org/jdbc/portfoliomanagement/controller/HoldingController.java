@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://127.0.0.1:5500/")
+// Allow frontend to call APIs from any origin in development.
+// If you want to lock this down later, replace "*" with specific origins
+// like "http://127.0.0.1:5500" or "http://localhost:5500".
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 public class HoldingController {
