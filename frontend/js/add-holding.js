@@ -134,6 +134,14 @@ async function handleFormSubmit(event) {
     formError.style.display = 'none';
     formSuccess.style.display = 'none';
 
+    const symbolInput = document.getElementById('symbol');
+    const symbolCodeInput = document.getElementById('symbolCode');
+    if (symbolCodeInput && symbolCodeInput.value) {
+        // preserve user-friendly text in UI but set the actual code into symbol for submission
+        symbolInput.dataset._display = symbolInput.value; // store displayed name
+        symbolInput.value = symbolCodeInput.value;
+    }
+
     // Get form data
     const formData = {
         assetType: document.getElementById('assetType').value.trim(),
@@ -161,6 +169,12 @@ async function handleFormSubmit(event) {
         // Show success message
         showSuccess('form-success', 'Holding added successfully! Redirecting...');
 
+        // Restore display value in UI (not necessary after redirect but keeps UI consistent)
+        if (symbolInput && symbolInput.dataset._display) {
+            symbolInput.value = symbolInput.dataset._display;
+            delete symbolInput.dataset._display;
+        }
+
         // Reset form
         document.getElementById('add-holding-form').reset();
 
@@ -176,6 +190,12 @@ async function handleFormSubmit(event) {
         // Re-enable submit button
         submitBtn.disabled = false;
         submitBtn.textContent = 'Add Holding';
+
+        // Restore display value if we overwrote it
+        if (symbolInput && symbolInput.dataset._display) {
+            symbolInput.value = symbolInput.dataset._display;
+            delete symbolInput.dataset._display;
+        }
     }
 }
 
@@ -293,7 +313,8 @@ async function onSymbolSearchInput(e) {
                 item.dataset.type = 'STOCK';
                 item.dataset.symbol = m.symbol;
             } else {
-                item.textContent = `${m.schemeCode} — ${m.schemeName}`;
+                // Display scheme name for friendliness but keep schemeCode in data attribute
+                item.textContent = `${m.schemeName} — ${m.schemeCode}`;
                 item.dataset.type = 'MUTUAL_FUND';
                 item.dataset.schemeCode = m.schemeCode;
             }
@@ -323,7 +344,10 @@ async function onSelectSuggestionFromDom(item) {
     if (type === 'STOCK') {
         const symbol = item.dataset.symbol;
         if (symbolInput) {
-            symbolInput.value = symbol.toUpperCase();
+            // show friendly display (symbol + name) but keep code in hidden input for submission
+            symbolInput.value = `${symbol.toUpperCase()}`; // display the ticker
+            const symbolCodeInput = document.getElementById('symbolCode');
+            if (symbolCodeInput) symbolCodeInput.value = symbol.toUpperCase();
             symbolInput.dataset.selected = 'true';
         }
 
@@ -345,7 +369,11 @@ async function onSelectSuggestionFromDom(item) {
     } else if (type === 'MUTUAL_FUND') {
         const schemeCode = item.dataset.schemecode || item.dataset.schemeCode;
         if (symbolInput) {
-            symbolInput.value = schemeCode;
+            // show scheme name in UI and keep code in hidden field
+            const displayText = item.textContent || schemeCode;
+            symbolInput.value = displayText;
+            const symbolCodeInput = document.getElementById('symbolCode');
+            if (symbolCodeInput) symbolCodeInput.value = schemeCode;
             symbolInput.dataset.selected = 'true';
         }
 
