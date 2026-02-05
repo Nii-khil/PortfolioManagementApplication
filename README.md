@@ -19,11 +19,6 @@ The **Portfolio Management Application** helps users manage, track, and analyze 
 * **Best and worst performer** identification
 * Real-time **current value updates**
 
-### Portfolio Chat Assistant
-
-* Chat assistant for queries related to your portfolio
-* Suggestions to **diversify** and **rebalance** the portfolio
-
 ## Team
 
 **Team Echo**
