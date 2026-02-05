@@ -81,11 +81,11 @@ function displayComposition(composition) {
     // Calculate total
     const total = Object.values(composition).reduce((sum, val) => sum + val, 0);
 
-    // Colors for different asset types
+    // Colors for different asset types (match dark theme)
     const colors = {
-        'STOCK': '#667eea',
-        'MUTUAL_FUND': '#48bb78',
-        'default': '#a0aec0'
+        'STOCK': '#06b6d4',
+        'MUTUAL_FUND': '#10b981',
+        'default': '#71717a'
     };
 
     // Draw pie chart
@@ -101,7 +101,7 @@ function displayComposition(composition) {
         ctx.lineTo(150, 150);
         ctx.fillStyle = colors[assetType] || colors.default;
         ctx.fill();
-        ctx.strokeStyle = '#fff';
+        ctx.strokeStyle = '#18181b';
         ctx.lineWidth = 2;
         ctx.stroke();
 
@@ -363,7 +363,7 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
     const steps = Math.max(1, cleanPrices.length - 1);
 
     // Draw axes
-    ctx.strokeStyle = '#e2e8f0';
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(padding, padding);
@@ -372,7 +372,7 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
     ctx.stroke();
 
     // Draw grid lines
-    ctx.strokeStyle = '#f7fafc';
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= 5; i++) {
         const y = padding + (chartHeight / 5) * i;
@@ -383,7 +383,7 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
 
         // Price labels
         const price = maxPrice - (priceRange / 5) * i;
-        ctx.fillStyle = '#718096';
+        ctx.fillStyle = '#a1a1aa';
         ctx.font = '12px Arial';
         ctx.textAlign = 'right';
         // Use INR symbol consistently for all assets
@@ -391,7 +391,7 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
     }
 
     // Draw line
-    ctx.strokeStyle = '#667eea';
+    ctx.strokeStyle = '#06b6d4';
     ctx.lineWidth = 3;
     ctx.beginPath();
 
@@ -413,21 +413,21 @@ function drawHistoricalChart(dates, prices, symbol, assetType, priceLabel = 'Pri
         const x = padding + (chartWidth / steps) * index;
         const y = height - padding - ((price - minPrice) / priceRange) * chartHeight;
 
-        ctx.fillStyle = '#667eea';
+        ctx.fillStyle = '#06b6d4';
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
     });
 
     // Title
-    ctx.fillStyle = '#2d3748';
+    ctx.fillStyle = '#fafafa';
     ctx.font = 'bold 16px Arial';
     ctx.textAlign = 'center';
     const historyLabel = priceLabel === 'NAV' ? 'NAV History' : 'Price History';
     ctx.fillText(`${symbol} - 30 Day ${historyLabel}`, width / 2, 30);
 
     // Show some date labels (every 5th point)
-    ctx.fillStyle = '#718096';
+    ctx.fillStyle = '#a1a1aa';
     ctx.font = '11px Arial';
     ctx.textAlign = 'center';
     for (let i = 0; i < dates.length; i += 5) {

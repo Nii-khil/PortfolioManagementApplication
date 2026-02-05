@@ -284,9 +284,6 @@ async function onSymbolSearchInput(e) {
         matches.forEach(m => {
             const item = document.createElement('div');
             item.className = 'suggestion-item';
-            item.style.padding = '6px 8px';
-            item.style.cursor = 'pointer';
-            item.style.borderBottom = '1px solid #eee';
 
             if (assetType === 'STOCK') {
                 item.textContent = `${m.symbol} — ${m.name} ${m.exch ? '(' + m.exch + ')' : ''}`;

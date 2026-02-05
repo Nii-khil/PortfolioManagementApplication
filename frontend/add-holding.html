@@ -9,7 +9,7 @@
 <body>
 <div class="container">
     <header>
-        <h1>📊 Portfolio Management System</h1>
+        <h1>Portfolio Management System</h1>
         <nav>
             <a href="index.html">Dashboard</a>
             <a href="add-holding.html" class="active">Add Holding</a>
@@ -23,6 +23,7 @@
         </div>
 
         <div class="form-container">
+            <div class="form-card">
             <form id="add-holding-form">
                 <div class="form-group">
                     <label for="assetType">Asset Type *</label>
@@ -43,7 +44,7 @@
                     <!-- Stock lookup UI -->
                     <div id="stock-lookup" style="display:none; margin-top:8px;">
                         <input type="text" id="symbolSearch" placeholder="Search stocks by name or symbol" maxlength="50">
-                        <div id="symbolSuggestions" class="suggestions" style="display:none; border:1px solid #ccc; max-height:180px; overflow:auto; background:#fff;"></div>
+                        <div id="symbolSuggestions" class="suggestions" style="display:none; max-height:180px; overflow:auto;"></div>
                         <div id="stockLookupInfo" style="display:none; margin-top:6px; font-size:0.9em; color:#333;"></div>
                     </div>
                 </div>
@@ -110,6 +111,7 @@
                     </button>
                 </div>
             </form>
+            </div>
         </div>
 
         <div class="info-box">

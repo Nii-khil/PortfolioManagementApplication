@@ -10,7 +10,7 @@ async function loadHoldings() {
     const errorElement = document.getElementById('error');
     const emptyStateElement = document.getElementById('empty-state');
     const holdingsContainer = document.getElementById('holdings-container');
-    const holdingsBody = document.getElementById('holdings-body');
+    const holdingsGrid = document.getElementById('holdings-grid');
 
     try {
         // Show loading
@@ -31,11 +31,11 @@ async function loadHoldings() {
             return;
         }
 
-        // Display holdings
-        holdingsBody.innerHTML = '';
+        // Display holdings as cards
+        holdingsGrid.innerHTML = '';
         holdings.forEach(holding => {
-            const row = createHoldingRow(holding);
-            holdingsBody.appendChild(row);
+            const card = createHoldingCard(holding);
+            holdingsGrid.appendChild(card);
         });
 
         holdingsContainer.style.display = 'block';
@@ -48,39 +48,53 @@ async function loadHoldings() {
     }
 }
 
-function createHoldingRow(holding) {
-    const row = document.createElement('tr');
+function createHoldingCard(holding) {
+    const card = document.createElement('div');
+    card.className = 'holding-card';
 
-    // Determine profit/loss class
     const plClass = holding.profitLoss >= 0 ? 'profit' : 'loss';
+    const assetBadgeClass = holding.assetType === 'STOCK' ? 'badge-stock' : 'badge-mf';
+    const assetLabel = holding.assetType === 'STOCK' ? 'Stock' : 'Mutual Fund';
 
-    // Get currency symbol based on asset type
-    const currencySymbol = holding.currencySymbol || (holding.assetType === 'STOCK' ? '$' : '₹');
-
-    row.innerHTML = `
-        <td><strong>${holding.symbol}</strong></td>
-        <td>${holding.assetType}</td>
-        <td>${holding.category || '-'}</td>
-        <td>${holding.quantity}</td>
-        <td>${formatCurrency(holding.purchasePrice, holding.assetType)}</td>
-        <td>${formatCurrency(holding.currentPrice, holding.assetType)}</td>
-        <td>${formatCurrency(holding.currentValue, holding.assetType)}</td>
-        <td class="${plClass}">${formatCurrency(holding.profitLoss, holding.assetType)}</td>
-        <td class="${plClass}">${formatPercentage(holding.profitLossPercentage)}</td>
-        <td>${formatDate(holding.purchaseDate)}</td>
-        <td>
-            <button class="btn-secondary" onclick="editHolding(${holding.id})"
-                    style="margin-right: 5px; padding: 6px 12px;">
-                Edit
-            </button>
-            <button class="btn-danger" onclick="deleteHolding(${holding.id}, '${holding.symbol}')">
-                Delete
-            </button>
-        </td>
+    card.innerHTML = `
+        <div class="holding-card-header">
+            <span class="holding-symbol">${holding.symbol}</span>
+            <div class="holding-badges">
+                <span class="badge ${assetBadgeClass}">${assetLabel}</span>
+                ${holding.category ? `<span class="badge badge-category">${holding.category}</span>` : ''}
+            </div>
+        </div>
+        <div class="holding-stats">
+            <div class="holding-stat">
+                <div class="holding-stat-label">Quantity</div>
+                <div class="holding-stat-value">${holding.quantity}</div>
+            </div>
+            <div class="holding-stat">
+                <div class="holding-stat-label">Current Value</div>
+                <div class="holding-stat-value">${formatCurrency(holding.currentValue, holding.assetType)}</div>
+            </div>
+            <div class="holding-stat">
+                <div class="holding-stat-label">Purchase Price</div>
+                <div class="holding-stat-value">${formatCurrency(holding.purchasePrice, holding.assetType)}</div>
+            </div>
+            <div class="holding-stat">
+                <div class="holding-stat-label">Purchase Date</div>
+                <div class="holding-stat-value">${formatDate(holding.purchaseDate)}</div>
+            </div>
+        </div>
+        <div class="holding-pl ${plClass}">
+            <span class="holding-pl-label">Profit / Loss</span>
+            <span class="holding-pl-value">${formatCurrency(holding.profitLoss, holding.assetType)} (${formatPercentage(holding.profitLossPercentage)})</span>
+        </div>
+        <div class="holding-actions">
+            <button class="btn-secondary" onclick="editHolding(${holding.id})">Edit</button>
+            <button class="btn-danger" onclick="deleteHolding(${holding.id}, ${JSON.stringify(holding.symbol)})">Delete</button>
+        </div>
     `;
 
-    return row;
+    return card;
 }
+
 
 function editHolding(id) {
     window.location.href = `edit-holding.html?id=${id}`;
