@@ -304,7 +304,6 @@ public class ChatbotService {
     public List<String> getPredefinedQuestions() {
         return Arrays.asList(
             "How is my portfolio performing today?",
-            "What is my total portfolio value?",
             "How much profit or loss am I currently in?",
             "Show my portfolio summary",
             "What assets do I currently hold?"

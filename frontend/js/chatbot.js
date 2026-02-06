@@ -28,7 +28,7 @@ class PortfolioChatbot {
                     <div class="chatbot-messages" id="chatbotMessages">
                         <div class="welcome-message">
                             <h4>👋 Welcome!</h4>
-                            <p>I'm your portfolio assistant. Choose a question below or type your own!</p>
+                            <p>I'm your portfolio assistant. Choose a question below!</p>
                         </div>
                     </div>
                     
@@ -44,19 +44,7 @@ class PortfolioChatbot {
                             <!-- Options will be loaded dynamically -->
                         </div>
                     </div>
-                    
-                    <div class="chatbot-input-area">
-                        <input 
-                            type="text" 
-                            class="chatbot-input" 
-                            id="chatbotInput" 
-                            placeholder="Ask me anything about your portfolio..."
-                            maxlength="200"
-                        />
-                        <button class="chatbot-send" id="chatbotSend" title="Send message">
-                            ➤
-                        </button>
-                    </div>
+
                 </div>
             </div>
         `;
@@ -67,17 +55,9 @@ class PortfolioChatbot {
     attachEventListeners() {
         const toggle = document.getElementById('chatbotToggle');
         const close = document.getElementById('chatbotClose');
-        const send = document.getElementById('chatbotSend');
-        const input = document.getElementById('chatbotInput');
 
         toggle.addEventListener('click', () => this.toggleChatbot());
         close.addEventListener('click', () => this.toggleChatbot());
-        send.addEventListener('click', () => this.sendMessage());
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.sendMessage();
-            }
-        });
     }
 
     toggleChatbot() {
@@ -141,6 +121,8 @@ class PortfolioChatbot {
 
     async sendMessage() {
         const input = document.getElementById('chatbotInput');
+        if (!input) return;
+
         const message = input.value.trim();
 
         if (!message) return;
@@ -242,7 +224,7 @@ class PortfolioChatbot {
         messagesContainer.innerHTML = `
             <div class="welcome-message">
                 <h4>👋 Welcome!</h4>
-                <p>I'm your portfolio assistant. Choose a question below or type your own!</p>
+                <p>I'm your portfolio assistant. Choose a question below!</p>
             </div>
         `;
         this.messages = [];
