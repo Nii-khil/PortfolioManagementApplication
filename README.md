@@ -1,5 +1,9 @@
 # Portfolio Management Application - Team Echo
 
+## Team
+
+**Team Echo**
+
 ## Overview
 
 The **Portfolio Management Application** helps users manage, track, and analyze their investment portfolios in a simple and interactive way. It supports multiple asset types and provides real-time insights along with an intelligent chat assistant for portfolio-related queries.
@@ -8,7 +12,7 @@ The **Portfolio Management Application** helps users manage, track, and analyze 
 
 ### Portfolio Management
 
-* Add, edit, and delete **stocks**, **bonds**, and **cash holdings**
+* Add, edit, and delete **stocks** and **mutual funds**
 * Track asset **quantities**, **purchase price**, and **date of purchase**
 * Real-time **profit and loss (P/L)** calculation
 
@@ -18,7 +22,5 @@ The **Portfolio Management Application** helps users manage, track, and analyze 
 * Asset composition **pie chart**
 * **Best and worst performer** identification
 * Real-time **current value updates**
-
-## Team
-
-**Team Echo**
+* 30-day **historical price line graph**
+* **Portfolio diversification** suggestions
