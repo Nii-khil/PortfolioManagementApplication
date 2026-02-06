@@ -2,6 +2,7 @@ package org.jdbc.portfoliomanagement.controller;
 
 import org.jdbc.portfoliomanagement.entity.HistoricalPrice;
 import org.jdbc.portfoliomanagement.entity.Holding;
+import org.jdbc.portfoliomanagement.service.ChatbotService;
 import org.jdbc.portfoliomanagement.service.HistoricalPriceService;
 import org.jdbc.portfoliomanagement.service.HoldingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +24,9 @@ public class HoldingController {
 
     @Autowired
     private HistoricalPriceService historicalPriceService;
+
+    @Autowired
+    private ChatbotService chatbotService;
 
     @GetMapping("/holdings")
     public ResponseEntity<List<Holding>> getAllHoldings() {
@@ -151,5 +156,24 @@ public class HoldingController {
     public ResponseEntity<Map<String, Object>> getDiversificationSuggestions() {
         Map<String, Object> suggestions = holdingService.getDiversificationSuggestions();
         return ResponseEntity.ok(suggestions);
+    }
+
+    @PostMapping("/chatbot/query")
+    public ResponseEntity<Map<String, Object>> chatbotQuery(@RequestBody Map<String, String> request) {
+        String query = request.get("query");
+        if (query == null || query.trim().isEmpty()) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", "Query cannot be empty");
+            return ResponseEntity.badRequest().body(error);
+        }
+        Map<String, Object> response = chatbotService.handleChatbotQuery(query);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/chatbot/questions")
+    public ResponseEntity<List<String>> getPredefinedQuestions() {
+        List<String> questions = chatbotService.getPredefinedQuestions();
+        return ResponseEntity.ok(questions);
     }
 }
